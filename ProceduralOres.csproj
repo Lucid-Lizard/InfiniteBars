@@ -8,6 +8,7 @@
 		
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Remove="Assets\Textures\InfinifurnaceUI.png" />
 	  <None Remove="Content\Items\BlankIngot.png" />
 	  <None Remove="Content\Items\Infinifurnace_Item.png" />
 	  <None Remove="Content\Tiles\BlankIngot_Placed.png" />
