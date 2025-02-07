@@ -1,0 +1,1 @@
+Infinite Bars adds the ability to smelt any item in the game, modded or vanilla, down into a bar. The amount required to smelt is currently 5, but will be calculated later on based off the value and rarity of the item. you will be able to craft these bars into new items later on too, such as tools or weapons

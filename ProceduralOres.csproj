@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- Import tModLoader mod properties -->
+	<Import Project="..\tModLoader.targets" />
+
+	<!-- General -->
+	<PropertyGroup>
+		
+	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Content\Items\BlankIngot.png" />
+	  <None Remove="Content\Items\Infinifurnace_Item.png" />
+	  <None Remove="Content\Tiles\BlankIngot_Placed.png" />
+	  <None Remove="Content\Tiles\Infinifurnace.png" />
+	</ItemGroup>
+
+	<!-- References -->
+
+</Project>

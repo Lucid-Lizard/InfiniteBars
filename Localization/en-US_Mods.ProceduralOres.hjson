@@ -1,0 +1,11 @@
+Items: {
+	BlankIngot: {
+		Tooltip: ""
+		DisplayName: Blank Ingot
+	}
+
+	Infinifurnace_Item: {
+		DisplayName: Infinifurnace
+		Tooltip: "Allows you to craft infinite bars"
+	}
+}

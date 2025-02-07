@@ -1,0 +1,3 @@
+displayName = Procedural Ores
+author = Lucid Lizard
+version = 0.1
