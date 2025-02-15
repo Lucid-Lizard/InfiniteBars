@@ -6,6 +6,6 @@ Items: {
 
 	Infinifurnace_Item: {
 		DisplayName: Infinifurnace
-		Tooltip: "Allows you to craft infinite bars"
+		Tooltip: Allows you to craft infinite bars
 	}
 }
