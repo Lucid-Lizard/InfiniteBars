@@ -79,24 +79,16 @@ public class InfinifurnaceUI : SmartUIState
         _background = new UIImageFramed(BackgroundTexture, FurnaceFrameDeactivated);
         _panel.Append(_background);
 
-        _inputSlot = new CustomItemSlot
-        {
-            ShouldDrawBackground = false,
-            Scale = 28f / 52f
-        };
+        _inputSlot = new InfinifurnaceItemSlot();
         _inputSlot.Left.Set(10, 0);
         _inputSlot.Top.Set(28, 0);
         _inputSlot.ItemChanged += InputSlotOnItemChanged;
         _panel.Append(_inputSlot);
 
-        _outputSlot = new CustomItemSlot
-        {
-            ShouldDrawBackground = false,
-            TakeOnly = true,
-            Scale = 28f / 52f
-        };
+        _outputSlot = new InfinifurnaceItemSlot();
         _outputSlot.Left.Set(58, 0);
         _outputSlot.Top.Set(28, 0);
+        _outputSlot.TakeOnly = true;
         _outputSlot.ItemChanged += OutputSlotOnItemChanged;
         _panel.Append(_outputSlot);
 
@@ -202,5 +194,14 @@ public class InfinifurnaceUI : SmartUIState
         }
 
         Recalculate();
+    }
+}
+
+internal class InfinifurnaceItemSlot : CustomItemSlot
+{
+    public InfinifurnaceItemSlot()
+    {
+        ShouldDrawBackground = false;
+        Scale = 28f / 52f;
     }
 }
