@@ -1,3 +1,10 @@
+GUI: {
+	Infinifurnace: {
+		SmeltingHint: Place an item here to smelt
+		RequiredHint: "{0}/{1} required"
+	}
+}
+
 Items: {
 	BlankIngot: {
 		Tooltip: ""

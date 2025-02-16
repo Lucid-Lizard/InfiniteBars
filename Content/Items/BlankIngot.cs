@@ -236,7 +236,7 @@ public class BlankIngotRecipeSystem : ModSystem
     }
 
 
-    private static int CalculateCraftingAmount(int value, int rare)
+    public static int CalculateCraftingAmount(int value, int rare)
     {
         float rarityFactor = Math.Max(1, 5 - rare);
         var valueFactor = Math.Max(1, (float)Math.Ceiling(Math.Sqrt(value / 1000f)));

@@ -1,4 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
+using ProceduralOres.Content.GUI;
+using ProceduralOres.Content.Items;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.Enums;
@@ -31,6 +33,21 @@ public class Infinifurnace : ModTile
     
     public override bool HasSmartInteract(int i, int j, SmartInteractScanSettings settings)
     {
+        return true;
+    }
+    
+    public override void MouseOver(int i, int j)
+    {
+        var player = Main.LocalPlayer;
+        player.noThrow = 2;
+        player.cursorItemIconEnabled = true;
+        player.cursorItemIconID = ModContent.ItemType<Infinifurnace_Item>();
+    }
+
+    public override bool RightClick(int i, int j)
+    {
+        InfinifurnaceUI.ToggleActive();
+        
         return true;
     }
 
