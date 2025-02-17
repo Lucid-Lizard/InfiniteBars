@@ -6,7 +6,9 @@ using ProceduralOres.Content.Items;
 using ProceduralOres.Core.Loaders.UILoading;
 using ReLogic.Content;
 using Terraria;
+using Terraria.Audio;
 using Terraria.GameContent.UI.Elements;
+using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.UI;
@@ -55,8 +57,13 @@ public class InfinifurnaceUI : SmartUIState
         SetActive(!IsActive);
     }
 
-    private static void SetActive(bool active)
+    private static void SetActive(bool active, bool playSound = true)
     {
+        if (active == IsActive)
+            return;
+
+        Main.playerInventory = active;
+        if (playSound) SoundEngine.PlaySound(active ? SoundID.MenuOpen : SoundID.MenuClose);
         if (active)
             UILoader.GetUIState<InfinifurnaceUI>().Update(null);
         else
@@ -102,12 +109,34 @@ public class InfinifurnaceUI : SmartUIState
         Append(_panel);
     }
 
+    private static int _monitoringItemType = -1;
+
     private static void InputSlotOnItemChanged(CustomItemSlot slot, ItemChangedEventArgs e)
     {
         var newInputItem = e.NewItem;
         if (!newInputItem.IsAir)
         {
-            var curStack = newInputItem.stack;
+            var curStack = 1;
+
+            // Check if the item is stackable
+            if (newInputItem.maxStack == 1)
+            {
+                // Find total amount of the item in the player's inventory
+                var player = Main.LocalPlayer;
+                for (var i = 0; i < 50; i++)
+                {
+                    var invItem = player.inventory[i];
+                    if (invItem.type == newInputItem.type) curStack++;
+                }
+                
+                // Start monitoring the item count continuously
+                _monitoringItemType = newInputItem.type;
+            }
+            else
+            {
+                curStack = newInputItem.stack;
+            }
+
             var craftingAmount = BlankIngotRecipeSystem.CalculateCraftingAmount(newInputItem.value, newInputItem.rare);
             _hintText.SetText(RequiredHintText.WithFormatArgs(curStack, craftingAmount));
             if (curStack >= craftingAmount)
@@ -137,18 +166,49 @@ public class InfinifurnaceUI : SmartUIState
 
         if (stackDiff == 0)
             return;
-
+        
         var inputItem = _inputSlot.Item;
         var craftingAmount = BlankIngotRecipeSystem.CalculateCraftingAmount(inputItem.value, inputItem.rare);
-        var newInputStack = inputItem.stack - craftingAmount * stackDiff;
-        if (newInputStack <= 0)
+        
+        // Check if the input item is not stackable (custom behavior)
+        if (inputItem.maxStack == 1)
         {
-            _inputSlot.SetItem(EmptyItem);
+            var consumed = 0;
+            
+            // First consume the item from the player's inventory
+            for (var i = 0; i < 50; i++)
+            {
+                var invItem = Main.LocalPlayer.inventory[i];
+                if (invItem.type != inputItem.type) continue;
+                if (consumed < craftingAmount * stackDiff)
+                {
+                    Main.LocalPlayer.inventory[i] = EmptyItem;
+                    consumed++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            
+            // Then consume the item from the input slot
+            if (consumed < craftingAmount * stackDiff)
+            {
+                _inputSlot.SetItem(EmptyItem);
+            }
         }
         else
         {
-            inputItem.stack = newInputStack;
-            _inputSlot.SetItem(inputItem);
+            var newInputStack = inputItem.stack - craftingAmount * stackDiff;
+            if (newInputStack <= 0)
+            {
+                _inputSlot.SetItem(EmptyItem);
+            }
+            else
+            {
+                inputItem.stack = newInputStack;
+                _inputSlot.SetItem(inputItem);
+            }
         }
     }
 
@@ -169,6 +229,7 @@ public class InfinifurnaceUI : SmartUIState
         _hintText.SetText(SmeltingHintText);
         _hintText.TextColor = Color.White;
         _background.SetFrame(FurnaceFrameDeactivated);
+        _monitoringItemType = -1;
         ClearResultItem();
     }
 
@@ -176,7 +237,7 @@ public class InfinifurnaceUI : SmartUIState
     {
         if (_inputSlot.Item.IsAir)
             return;
-        
+
         var player = Main.LocalPlayer;
         _inputSlot.Item.noGrabDelay = 0;
         player.GetItem(player.whoAmI, _inputSlot.Item, GetItemSettings.GetItemInDropItemCheck);
@@ -191,6 +252,36 @@ public class InfinifurnaceUI : SmartUIState
         {
             _panel.Left.Set(Main.screenWidth / 2f - 48, 0);
             _panel.Top.Set(Main.screenHeight / 2f + 62, 0);
+        }
+
+        // Close the UI if the player exits the inventory
+        if (!Main.playerInventory) SetActive(false, false);
+        
+        // Continuously monitor the item count
+        if (_monitoringItemType != -1)
+        {
+            var player = Main.LocalPlayer;
+            var curStack = 1;
+            for (var i = 0; i < 50; i++)
+            {
+                var invItem = player.inventory[i];
+                if (invItem.type == _monitoringItemType) curStack++;
+            }
+
+            var craftingAmount = BlankIngotRecipeSystem.CalculateCraftingAmount(_inputSlot.Item.value, _inputSlot.Item.rare);
+            _hintText.SetText(RequiredHintText.WithFormatArgs(curStack, craftingAmount));
+            if (curStack >= craftingAmount)
+            {
+                _hintText.TextColor = new Color(253, 221, 3);
+                _background.SetFrame(FurnaceFrameActivated);
+                SetResultItem(_inputSlot.Item, curStack / craftingAmount);
+            }
+            else
+            {
+                _hintText.TextColor = Color.White;
+                _background.SetFrame(FurnaceFrameDeactivated);
+                ClearResultItem();
+            }
         }
 
         Recalculate();
