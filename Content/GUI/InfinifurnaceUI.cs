@@ -34,6 +34,8 @@ public class InfinifurnaceUI : SmartUIState
     private static CustomItemSlot _outputSlot;
     private static CustomItemSlot _inputSlot;
 
+    private static int _monitoringItemType = -1;
+
     static InfinifurnaceUI()
     {
         EmptyItem = new Item();
@@ -109,8 +111,6 @@ public class InfinifurnaceUI : SmartUIState
         Append(_panel);
     }
 
-    private static int _monitoringItemType = -1;
-
     private static void InputSlotOnItemChanged(CustomItemSlot slot, ItemChangedEventArgs e)
     {
         var newInputItem = e.NewItem;
@@ -128,7 +128,7 @@ public class InfinifurnaceUI : SmartUIState
                     var invItem = player.inventory[i];
                     if (invItem.type == newInputItem.type) curStack++;
                 }
-                
+
                 // Start monitoring the item count continuously
                 _monitoringItemType = newInputItem.type;
             }
@@ -166,15 +166,15 @@ public class InfinifurnaceUI : SmartUIState
 
         if (stackDiff == 0)
             return;
-        
+
         var inputItem = _inputSlot.Item;
         var craftingAmount = BlankIngotRecipeSystem.CalculateCraftingAmount(inputItem.value, inputItem.rare);
-        
+
         // Check if the input item is not stackable (custom behavior)
         if (inputItem.maxStack == 1)
         {
             var consumed = 0;
-            
+
             // First consume the item from the player's inventory
             for (var i = 0; i < 50; i++)
             {
@@ -190,12 +190,9 @@ public class InfinifurnaceUI : SmartUIState
                     break;
                 }
             }
-            
+
             // Then consume the item from the input slot
-            if (consumed < craftingAmount * stackDiff)
-            {
-                _inputSlot.SetItem(EmptyItem);
-            }
+            if (consumed < craftingAmount * stackDiff) _inputSlot.SetItem(EmptyItem);
         }
         else
         {
@@ -256,7 +253,7 @@ public class InfinifurnaceUI : SmartUIState
 
         // Close the UI if the player exits the inventory
         if (!Main.playerInventory) SetActive(false, false);
-        
+
         // Continuously monitor the item count
         if (_monitoringItemType != -1)
         {
@@ -268,7 +265,8 @@ public class InfinifurnaceUI : SmartUIState
                 if (invItem.type == _monitoringItemType) curStack++;
             }
 
-            var craftingAmount = BlankIngotRecipeSystem.CalculateCraftingAmount(_inputSlot.Item.value, _inputSlot.Item.rare);
+            var craftingAmount =
+                BlankIngotRecipeSystem.CalculateCraftingAmount(_inputSlot.Item.value, _inputSlot.Item.rare);
             _hintText.SetText(RequiredHintText.WithFormatArgs(curStack, craftingAmount));
             if (curStack >= craftingAmount)
             {

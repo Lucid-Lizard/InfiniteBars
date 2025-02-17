@@ -15,7 +15,7 @@ namespace ProceduralOres.Content.Tiles;
 public class Infinifurnace : ModTile
 {
     public override string HighlightTexture => "ProceduralOres/Content/Tiles/Infinifurnace_Highlight";
-    
+
     public override void SetStaticDefaults()
     {
         Main.tileFrameImportant[Type] = true;
@@ -30,12 +30,12 @@ public class Infinifurnace : ModTile
 
         AddMapEntry(new Color(255, 100, 0), Language.GetText("ItemName.Furnace"));
     }
-    
+
     public override bool HasSmartInteract(int i, int j, SmartInteractScanSettings settings)
     {
         return true;
     }
-    
+
     public override void MouseOver(int i, int j)
     {
         var player = Main.LocalPlayer;
@@ -47,7 +47,7 @@ public class Infinifurnace : ModTile
     public override bool RightClick(int i, int j)
     {
         InfinifurnaceUI.ToggleActive();
-        
+
         return true;
     }
 

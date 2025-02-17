@@ -13,21 +13,21 @@ namespace ProceduralOres.Core.Loaders.UILoading;
 /// </summary>
 internal class UILoader : ModSystem
 {
-	/// <summary>
-	///     The collection of automatically craetaed UserInterfaces for SmartUIStates.
-	/// </summary>
-	private static List<UserInterface> _userInterfaces = new();
+    /// <summary>
+    ///     The collection of automatically craetaed UserInterfaces for SmartUIStates.
+    /// </summary>
+    private static List<UserInterface> _userInterfaces = new();
 
-	/// <summary>
-	///     The collection of all automatically loaded SmartUIStates.
-	/// </summary>
-	private static List<SmartUIState> _uiStates = new();
+    /// <summary>
+    ///     The collection of all automatically loaded SmartUIStates.
+    /// </summary>
+    private static List<SmartUIState> _uiStates = new();
 
-	/// <summary>
-	///     Uses reflection to scan through and find all types extending SmartUIState that arent abstract, and loads an
-	///     instance of them.
-	/// </summary>
-	public override void Load()
+    /// <summary>
+    ///     Uses reflection to scan through and find all types extending SmartUIState that arent abstract, and loads an
+    ///     instance of them.
+    /// </summary>
+    public override void Load()
     {
         if (Main.dedServ)
             return;
@@ -47,7 +47,7 @@ internal class UILoader : ModSystem
 
                     _uiStates?.Add(state);
                 }
-                
+
                 _userInterfaces?.Add(userInterface);
             }
     }
