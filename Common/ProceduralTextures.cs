@@ -1,110 +1,87 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using System;
 using System.Collections.Generic;
-using System;
-using Terraria.GameContent;
-using Terraria;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Terraria;
+using Terraria.GameContent;
 
 public static class ProceduralTextures
 {
-    public static Dictionary<int, Texture2D> AllProceduralTextures = new Dictionary<int, Texture2D>();
+    private static readonly Dictionary<int, Texture2D> AllProceduralTextures = new();
 
     public static Texture2D GetTexFromItem(Item item)
     {
-        if (!AllProceduralTextures.ContainsKey(item.type))
-        {
-            CreateTextureStamp(item);
-        }
+        if (!AllProceduralTextures.ContainsKey(item.type)) CreateTextureStamp(item);
         return AllProceduralTextures[item.type];
     }
 
     private static int GetSeedFromName(string name)
     {
-        int hash = 0;
-        foreach (char c in name)
-        {
-            hash = (hash * 31) + c;
-        }
+        var hash = 0;
+        foreach (var c in name) hash = hash * 31 + c;
         return Math.Abs(hash);
     }
 
-    public static void CreateTextureStamp(Item item)
+    private static void CreateTextureStamp(Item item)
     {
         try
         {
-            int pos = GetSeedFromName(item.Name);
-            Random seededRandom = new Random();
-            PerlinNoise noise = new PerlinNoise(pos);
-            Texture2D newTexture = new Texture2D(Main.graphics.GraphicsDevice, 40, 40);
-            Texture2D itemTexture = TextureAssets.Item[item.type].Value;
+            var pos = GetSeedFromName(item.Name);
+            var seededRandom = new Random();
+            var noise = new PerlinNoise(pos);
+            var newTexture = new Texture2D(Main.graphics.GraphicsDevice, 40, 40);
+            var itemTexture = TextureAssets.Item[item.type].Value;
 
-            Color[] itemTextureData = new Color[itemTexture.Width * itemTexture.Height];
+            var itemTextureData = new Color[itemTexture.Width * itemTexture.Height];
             itemTexture.GetData(itemTextureData);
 
-            List<Vector3> hslColors = new List<Vector3>();
-            foreach (Color color in itemTextureData)
-            {
+            var hslColors = new List<Vector3>();
+            foreach (var color in itemTextureData)
                 if (color.A > 0)
                 {
-                    Vector3 hsl = ColorToHSL(color);
-                    if (hsl.Z > 0.2f)
-                    {
-                        hslColors.Add(hsl);
-                    }
+                    var hsl = ColorToHSL(color);
+                    if (hsl.Z > 0.2f) hslColors.Add(hsl);
                 }
-            }
 
-            if (hslColors.Count == 0)
-            {
-                hslColors.Add(new Vector3(0, 0, 1));
-            }
+            if (hslColors.Count == 0) hslColors.Add(new Vector3(0, 0, 1));
 
             hslColors.Sort((a, b) => a.X.CompareTo(b.X));
 
-            Color[] newTextureData = new Color[40 * 40];
+            var newTextureData = new Color[40 * 40];
 
-            float frequency = 0.02f;
-            float octaves = 2;
-            float persistence = 0.8f;
-            float lacunarity = 1.0f;
+            const float frequency = 0.02f;
+            const float octaves = 2;
+            const float persistence = 0.8f;
+            const float lacunarity = 1.0f;
 
-            for (int y = 0; y < 40; y++)
+            for (var y = 0; y < 40; y++)
+            for (var x = 0; x < 40; x++)
             {
-                for (int x = 0; x < 40; x++)
+                float noiseValue = 0;
+                var freq = frequency;
+                var amp = 1f;
+
+                for (var i = 0; i < octaves; i++)
                 {
-                    float noiseValue = 0;
-                    float freq = frequency;
-                    float amp = 1f;
-
-                    for (int i = 0; i < octaves; i++)
-                    {
-                        noiseValue += noise.Noise(x * freq, y * freq, seededRandom.Next()) * amp;
-                        freq *= lacunarity;
-                        amp *= persistence;
-                    }
-
-                    noiseValue = (noiseValue + 1) / 2;
-
-                    int colorIndex = (int)(noiseValue * (hslColors.Count - 1));
-                    colorIndex = Math.Max(0, Math.Min(colorIndex, hslColors.Count - 1));
-
-                    Color finalColor = HSLToColor(hslColors[colorIndex]);
-
-                    int index = y * 40 + x;
-                    newTextureData[index] = finalColor;
+                    noiseValue += noise.Noise(x * freq, y * freq, seededRandom.Next()) * amp;
+                    freq *= lacunarity;
+                    amp *= persistence;
                 }
+
+                noiseValue = (noiseValue + 1) / 2;
+
+                var colorIndex = (int)(noiseValue * (hslColors.Count - 1));
+                colorIndex = Math.Max(0, Math.Min(colorIndex, hslColors.Count - 1));
+
+                var finalColor = HSLToColor(hslColors[colorIndex]);
+
+                var index = y * 40 + x;
+                newTextureData[index] = finalColor;
             }
 
             newTexture.SetData(newTextureData);
 
-            if (AllProceduralTextures.ContainsKey(item.type))
-            {
-                AllProceduralTextures[item.type] = newTexture;
-            }
-            else
-            {
-                AllProceduralTextures.Add(item.type, newTexture);
-            }
+            AllProceduralTextures[item.type] = newTexture;
         }
         catch (Exception e)
         {
@@ -114,16 +91,16 @@ public static class ProceduralTextures
 
     private static Vector3 ColorToHSL(Color color)
     {
-        float r = color.R / 255f;
-        float g = color.G / 255f;
-        float b = color.B / 255f;
-        float max = Math.Max(Math.Max(r, g), b);
-        float min = Math.Min(Math.Min(r, g), b);
+        var r = color.R / 255f;
+        var g = color.G / 255f;
+        var b = color.B / 255f;
+        var max = Math.Max(Math.Max(r, g), b);
+        var min = Math.Min(Math.Min(r, g), b);
         float h = 0, s = 0, l = (max + min) / 2;
 
         if (max != min)
         {
-            float d = max - min;
+            var d = max - min;
             s = l > 0.5f ? d / (2f - max - min) : d / (max + min);
 
             if (max == r)
@@ -141,9 +118,9 @@ public static class ProceduralTextures
 
     private static Color HSLToColor(Vector3 hsl)
     {
-        float h = hsl.X;
-        float s = hsl.Y;
-        float l = hsl.Z;
+        var h = hsl.X;
+        var s = hsl.Y;
+        var l = hsl.Z;
 
         float r, g, b;
 
@@ -153,8 +130,8 @@ public static class ProceduralTextures
         }
         else
         {
-            float q = l < 0.5f ? l * (1 + s) : l + s - l * s;
-            float p = 2 * l - q;
+            var q = l < 0.5f ? l * (1 + s) : l + s - l * s;
+            var p = 2 * l - q;
 
             r = HueToRGB(p, q, h + 1f / 3f);
             g = HueToRGB(p, q, h);
@@ -177,94 +154,89 @@ public static class ProceduralTextures
 
 public class PerlinNoise
 {
-    private int[] permutations;
-    private int[] gradients;
+    private readonly int[] _gradients;
+    private readonly int[] _permutations;
 
     public PerlinNoise(int seed)
     {
         try
         {
-            permutations = CreatePermutations(seed);
-            gradients = CreateGradients(seed);
+            _permutations = CreatePermutations(seed);
+            _gradients = CreateGradients(seed);
         }
         catch (Exception e)
         {
             Main.NewText($"Error initializing PerlinNoise: {e.Message}", Color.Red);
-            permutations = new int[512];
-            gradients = new int[512];
+            _permutations = new int[512];
+            _gradients = new int[512];
         }
     }
 
-    private int[] CreatePermutations(int seed)
+    private static int[] CreatePermutations(int seed)
     {
-        int[] p = new int[512];
-        for (int i = 0; i < 256; i++)
+        var p = new int[512];
+        for (var i = 0; i < 256; i++)
             p[i] = p[i + 256] = i;
 
-        Random rand = new Random(seed);
-        for (int i = 1; i < 256; i++)
+        var rand = new Random(seed);
+        for (var i = 1; i < 256; i++)
         {
-            int j = rand.Next(i, 256);
-            int temp = p[i];
-            p[i] = p[j];
-            p[j] = temp;
+            var j = rand.Next(i, 256);
+            (p[i], p[j]) = (p[j], p[i]);
         }
 
         return p;
     }
 
-    private int[] CreateGradients(int seed)
+    private static int[] CreateGradients(int seed)
     {
-        int[] g = new int[512];
-        Random rand = new Random(seed);
-        for (int i = 0; i < 256; i++)
-        {
-            g[i] = g[i + 256] = rand.Next(0, 32896);
-        }
+        var g = new int[512];
+        var rand = new Random(seed);
+        for (var i = 0; i < 256; i++) g[i] = g[i + 256] = rand.Next(0, 32896);
         return g;
     }
 
-    private float Fade(float t)
+    private static float Fade(float t)
     {
         return t * t * t * (t * (t * 6 - 15) + 10);
     }
 
-    private float Lerp(float t, float a, float b)
+    private static float Lerp(float t, float a, float b)
     {
         return a + t * (b - a);
     }
 
-    private float Grad(int hash, float x, float y)
+    private static float Grad(int hash, float x, float y)
     {
-        int h = hash & 3;
-        float u = h < 2 ? x : y;
-        float v = h < 2 ? y : x;
+        var h = hash & 3;
+        var u = h < 2 ? x : y;
+        var v = h < 2 ? y : x;
         return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
     }
 
     public float Noise(float x, float y, int seed)
     {
-        Random rand = new Random(seed);
-        int X = (int)Math.Floor(x) & 255;
-        int Y = (int)Math.Floor(y) & 255;
+        //var rand = new Random(seed);
+        var gridX = (int)Math.Floor(x) & 255;
+        var gridY = (int)Math.Floor(y) & 255;
         x -= (int)Math.Floor(x);
         y -= (int)Math.Floor(y);
 
-        int aa = permutations[X] + Y;
-        int ba = permutations[X + 1] + Y;
-        int ab = permutations[X] + Y + 1;
-        int bb = permutations[X + 1] + Y + 1;
+        var aa = _permutations[gridX] + gridY;
+        var ba = _permutations[gridX + 1] + gridY;
+        var ab = _permutations[gridX] + gridY + 1;
+        var bb = _permutations[gridX + 1] + gridY + 1;
 
-        float x1 = Fade(x);
-        float y1 = Fade(y);
+        var x1 = Fade(x);
+        var y1 = Fade(y);
 
-        float n00 = Grad(gradients[aa], x, y);
-        float n01 = Grad(gradients[ab], x, y - 1);
-        float n10 = Grad(gradients[ba], x - 1, y);
-        float n11 = Grad(gradients[bb], x - 1, y - 1);
+        var n00 = Grad(_gradients[aa], x, y);
+        var n01 = Grad(_gradients[ab], x, y - 1);
+        var n10 = Grad(_gradients[ba], x - 1, y);
+        var n11 = Grad(_gradients[bb], x - 1, y - 1);
 
-        float x2 = Lerp(x1, n00, n10);
-        float x3 = Lerp(x1, n01, n11);
+        var x2 = Lerp(x1, n00, n10);
+        var x3 = Lerp(x1, n01, n11);
 
         return Lerp(y1, x2, x3);
     }

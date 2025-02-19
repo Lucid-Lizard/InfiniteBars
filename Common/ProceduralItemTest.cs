@@ -1,34 +1,29 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using System;
-using Terraria.ModLoader;
-using Terraria;
+﻿using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using Terraria;
+using Terraria.ModLoader;
 
 public class ProceduralItemTest : GlobalItem
 {
+    private bool _proceduralDraw;
     public override bool InstancePerEntity => true;
-    private bool ProceduralDraw;
 
     public override void UpdateInventory(Item item, Player player)
     {
-        ProceduralDraw = false;
-        if (item == player.HeldItem && Main.keyState.IsKeyDown(Keys.LeftShift))
-        {
-            ProceduralDraw = true;
-        }
+        _proceduralDraw = item == player.HeldItem && Main.keyState.IsKeyDown(Keys.LeftShift);
     }
 
-    public override bool PreDrawInInventory(Item item, SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale)
+    public override bool PreDrawInInventory(Item item, SpriteBatch spriteBatch, Vector2 position, Rectangle frame,
+        Color drawColor, Color itemColor, Vector2 origin, float scale)
     {
-
-        if (!ProceduralDraw)
+        if (!_proceduralDraw)
             return true;
 
         try
         {
-            Texture2D tex = ProceduralTextures.GetTexFromItem(item);
-
+            var tex = ProceduralTextures.GetTexFromItem(item);
 
             spriteBatch.Draw(
                 tex,
@@ -36,7 +31,7 @@ public class ProceduralItemTest : GlobalItem
                 null,
                 Color.White,
                 0f,
-                Vector2.Zero,  
+                Vector2.Zero,
                 1f,
                 SpriteEffects.None,
                 0f
